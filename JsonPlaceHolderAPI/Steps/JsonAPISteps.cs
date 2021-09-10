@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using JsonPlaceHolderAPI.Model;
+using NUnit.Framework;
 using RestSharp;
 using RestSharp.Serialization.Json;
 using System;
@@ -15,7 +16,6 @@ namespace JsonPlaceHolderAPI.Steps
         public IRestRequest request;
         public IRestResponse response;
         public static JsonDeserializer deserialize = new JsonDeserializer();
-        public static TypeCode typeCode_info;
         string resultId;
         string resultTitle;
 
@@ -32,7 +32,7 @@ namespace JsonPlaceHolderAPI.Steps
         public void GivenIPerformOperatioWithFollowingValue(Table table)
         {
             dynamic data = table.CreateDynamicInstance();
-            request.AddJsonBody(new { userId = data.userId, title = data.title, body = data.body });
+            request.AddJsonBody(new Posts(){ userId =Convert.ToString(data.userId), title = data.title, body = data.body });
         }
 
         [Then(@"I can get status code (.*)")]
@@ -47,7 +47,7 @@ namespace JsonPlaceHolderAPI.Steps
         {
             var output = deserialize.Deserialize<Dictionary<string, string>>(response);
             //typeCode_info = deserialize.Deserialize<TypeCode>(response);
-            string result = typeCode_info.ToString();
+            
 
             resultId = output["id"];
             resultTitle = output["title"];
@@ -56,7 +56,8 @@ namespace JsonPlaceHolderAPI.Steps
         [Given(@"Execute API")]
         public void GivenExecuteAPI()
         {
-            response = client.Execute(request);
+            response = client.Execute<Posts>(request);
+            //response.Data.userId
         }
 
         [Then(@"I should the get values ""(.*)""")]
